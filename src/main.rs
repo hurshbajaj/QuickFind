@@ -11,7 +11,6 @@ use tui::{
 use event::Event;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut change_dir = false;
     let mut break_now = false;
     let mut i = 0;
     let mut state = ListState::default();
@@ -24,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = CrosstermBackend::new(&mut out);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut focus_dir = env::current_dir().expect("Could not get current directory");
+    let mut focus_dir = env::current_dir()?;
     let mut entries: Vec<String> = read_entries(&focus_dir)?;
 
     'outer: loop {
@@ -65,17 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Ok(Event::Key(KeyEvent { code, .. })) = event::read() {
                     match code {
                         KeyCode::Enter => {
-                            if let Some(raw_entry) = entries.get(i) {
-                                let path_candidate = focus_dir.join(raw_entry);
-                                if path_candidate.is_dir() {
-                                    focus_dir.push(Path::new(raw_entry));
-                                    entries = read_entries(&focus_dir).unwrap_or_default();
-                                    i = 0;
-                                } else {
-                                    break_now = true;
-                                    change_dir = true;
-                                }
-                            }
+                            break_now = true;
                         }
                         KeyCode::Esc => break_now = true,
                         KeyCode::Right => {
@@ -116,12 +105,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     out_post.execute(cursor::MoveTo(0, 0))?;
     out_post.execute(cursor::Show)?;
 
-    if change_dir {
-        std::process::Command::new("sh")
-            .arg("-c")
-            .arg(format!("echo cd '\"{}\"' | clip.exe", focus_dir.display()))
-            .output()?;
-    }
+    std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!("echo cd '\"{}\"' | clip.exe", focus_dir.display()))
+        .output()?;
 
     Ok(())
 }
@@ -134,4 +121,3 @@ fn read_entries(dir: &PathBuf) -> Result<Vec<String>, Box<dyn std::error::Error>
         .collect::<Vec<String>>();
     Ok(entries)
 }
-
