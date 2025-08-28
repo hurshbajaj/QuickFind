@@ -389,4 +389,3 @@ fn read_entries(dir: &PathBuf) -> Result<Vec<String>, Box<dyn std::error::Error>
     entries.sort();
     Ok(entries)
 }
-
