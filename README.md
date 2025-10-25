@@ -1,4 +1,4 @@
-### Welcome to QuickNav!  
+### Welcome to QuickFind!  
 
 A blazing - cross platform - fast alternative to repeated (cd/ls) commands at your service! :D   
 Use up/down arrow keys to navigate b/w children and left/right to enter or exit directories.
